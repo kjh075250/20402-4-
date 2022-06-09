@@ -17,7 +17,7 @@ public class CameraCtrl : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         CameraMove();   
     }
@@ -33,7 +33,7 @@ public class CameraCtrl : MonoBehaviour
         rotationY = rotationY + mouseY * detailY;
         rotationY = (rotationY > 180.0f) ? rotationY - 360.0f : rotationY;
 
-        cameraTransform.localEulerAngles = new Vector3(Mathf.Clamp(-rotationY, -25, 25),rotationX, 0f);
+        cameraTransform.localEulerAngles = new Vector3(Mathf.Clamp(-rotationY, -5, 25),rotationX, 0f);
         cameraTransform.position = targetTransform.position;
     }
 }
