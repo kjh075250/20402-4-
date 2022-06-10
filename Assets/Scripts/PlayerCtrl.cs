@@ -10,13 +10,20 @@ public class PlayerCtrl : MonoBehaviour
     [Header("¼Ó¼º")]
     public float walkSpeed = 3f;
     public float runSpeed = 10f;
+    public float currentFireRate = 0f;
 
 
-    public enum PlayerState { None, Idle, Walk, Run, Attack}
+    public enum PlayerState { None, Idle, Walk, Run}
+
     public PlayerState playerState = PlayerState.None;
+
 
     public Vector3 moveDirection = Vector3.zero;
     public float dirRotateSpeed = 5f;
+    public Transform aimTransform = null;
+    public GameObject shootEffect = null;
+    public GameObject damageEffect = null;
+    public GameObject shootLight = null;
     // Start is called before the first frame update
     void Start()
     {
@@ -28,6 +35,16 @@ public class PlayerCtrl : MonoBehaviour
     void Update()
     {
         Move();
+        AimRayCast();
+        CalFireRate();
+    }
+    void CalFireRate()
+    {
+        if(currentFireRate > 0)
+        {
+            currentFireRate -= Time.deltaTime;
+        }
+
     }
     void Move()
     {
@@ -50,14 +67,37 @@ public class PlayerCtrl : MonoBehaviour
         float speed = walkSpeed;
         
        
-        if(playerState == PlayerState.Run)
-        {
-            speed = runSpeed;
-        }
         Vector3 gravityVec = new Vector3(0f, 0f, 0f);
         Vector3 moveAmount = (moveDirection * speed * Time.deltaTime);
         animator.SetFloat("moveSpeed", moveAmount.magnitude *100f);
         transform.rotation = rot;
         collisionFlags = characterController.Move(moveAmount);
     }
+    void AimRayCast()
+    {
+        Vector3 posStart = aimTransform.position;
+        Vector3 posTarget = aimTransform.forward;
+        Ray ray = new Ray(posStart,posTarget);
+        RaycastHit rayHit;
+        Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red);
+        if (Input.GetMouseButton(0) && currentFireRate <= 0)
+        {
+            
+                if (Physics.Raycast(ray, out rayHit, 1000f, LayerMask.GetMask("Monster")))
+                {
+
+                    rayHit.transform.SendMessage("ApplyDamage", 20);
+                    GameObject clone = Instantiate(damageEffect, rayHit.point, Quaternion.LookRotation(rayHit.normal));
+                    Destroy(clone, 0.5f);
+                }
+            shootLight.SetActive(true);
+            currentFireRate = 0.1f;
+        }
+        else
+        {
+            shootLight.SetActive(false);
+        }
+
+    }
+
 }

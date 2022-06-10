@@ -10,11 +10,6 @@ public class CameraCtrl : MonoBehaviour
     public float detailY = 5f;
     public Transform cameraTransform = null;
     public Transform targetTransform = null;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void LateUpdate()

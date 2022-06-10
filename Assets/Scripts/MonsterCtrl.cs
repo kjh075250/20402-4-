@@ -6,7 +6,7 @@ public class MonsterCtrl : MonoBehaviour
 {
     public GameObject monsterSpawner = null;
 
-    public List<GameObject> monsters = new List<GameObject>();
+    public static List<GameObject> monsters = new List<GameObject>();
 
     public int spawnMaxCount = 50;
 
@@ -31,12 +31,17 @@ public class MonsterCtrl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        InvokeRepeating("Spawn", 3f, 5f);
+        InvokeRepeating("Spawn", 3f, 1f);
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+    void DropItem()
+    {
+
+        Debug.Log("아이템 드랍");
     }
 }

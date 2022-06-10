@@ -1,10 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class EnemyMove : MonsterCtrl
 {
-    public enum EnemyState {None, GoTarget, Attack }
+    public enum EnemyState {None, GoTarget, Attack,Damage, Die}
     EnemyState enemyState = EnemyState.None;
     public float moveSpd = 100f;
     public GameObject target = null;
@@ -14,32 +13,43 @@ public class EnemyMove : MonsterCtrl
     public Rigidbody enemyRigidbody = null;
     public Animator animator = null;
     public Transform enemyTransform = null;
-
+    private Renderer renDerer = null;
     [Header("전투 속성")]
     public int hp = 100;
     public float AtkRange = 15f;
     public GameObject damageEffect = null;
     public GameObject dieEffect = null;
-
+    float damageTime = 0f;
 
     // Start is called before the first frame update
     void Start()
     {
         enemyState = EnemyState.GoTarget;
+        renDerer = GetComponent<Renderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
         CheckState();
-
         AnimationCtrl();
+        ChkDamageTime();
     }
-    void OnDieAnimationFinished()
+    void ChkDamageTime()
     {
-        Instantiate(dieEffect, enemyTransform.position, Quaternion.identity);
-        Destroy(gameObject);
+        damageTime -= Time.deltaTime;
+        if (damageTime > 0)
+        {
+            moveSpd = 100f;
+            renDerer.material.color = Color.blue;
+        }
+        else
+        {
+            renDerer.material.color = Color.black;
+            moveSpd = 150f;
+        }
     }
+
     void SetMove()
     {
         Vector3 distance = Vector3.zero;
@@ -99,8 +109,43 @@ public class EnemyMove : MonsterCtrl
             case EnemyState.Attack:
                 SetAtk();
                 break;
+            case EnemyState.Damage:
+                break;
+            case EnemyState.Die:
+                SetDie();
+                break;
             default:
                 break;
         }
     }
+    void SetDie()
+    {
+        animator.StopPlayback();
+    }
+    void DieEvent()
+    {
+        monsters.Remove(gameObject);
+        SendMessage("DropItem");
+        Destroy(gameObject);
+    }
+
+    void ApplyDamage(int damage)
+    {
+        hp -= damage;
+        if(hp > 0)
+        {
+            damageTime = 0.1f;
+        }
+        if (hp < 0)
+        {
+            if(enemyState != EnemyState.Die)
+            {
+                enemyState = EnemyState.Die;
+                GameObject effect = Instantiate(dieEffect, enemyTransform.position, Quaternion.identity);
+                animator.SetTrigger("Die");
+                Destroy(effect, 1f);
+            }
+        }
+    }
+
 }
