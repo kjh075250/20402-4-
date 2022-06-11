@@ -5,6 +5,7 @@ using UnityEngine;
 public class MonsterCtrl : MonoBehaviour
 {
     public GameObject monsterSpawner = null;
+    public GameObject itemObject = null;
 
     public static List<GameObject> monsters = new List<GameObject>();
 
@@ -39,9 +40,14 @@ public class MonsterCtrl : MonoBehaviour
     {
         
     }
-    void DropItem()
-    {
 
-        Debug.Log("아이템 드랍");
+    void DropItem(Transform itemtrans)
+    {
+        int randomItem = Random.RandomRange(-2, 2);
+        if(randomItem > 0)
+        {
+            Instantiate(itemObject, itemtrans.position, Quaternion.identity);
+            Debug.Log("Item Drop");
+        }
     }
 }

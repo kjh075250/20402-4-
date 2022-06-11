@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 public class EnemyMove : MonsterCtrl
-{
+{ 
     public enum EnemyState {None, GoTarget, Attack,Damage, Die}
     EnemyState enemyState = EnemyState.None;
     public float moveSpd = 100f;
@@ -125,7 +123,9 @@ public class EnemyMove : MonsterCtrl
     void DieEvent()
     {
         monsters.Remove(gameObject);
-        SendMessage("DropItem");
+        Transform myTransform = this.transform;
+        myTransform.position = new Vector3(myTransform.position.x,1f,myTransform.position.z);
+        SendMessage("DropItem",myTransform);
         Destroy(gameObject);
     }
 
