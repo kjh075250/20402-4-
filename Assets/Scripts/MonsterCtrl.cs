@@ -10,6 +10,7 @@ public class MonsterCtrl : MonoBehaviour
     public static List<GameObject> monsters = new List<GameObject>();
 
     public int spawnMaxCount = 50;
+    public static int score = 0;
 
     private float rndPos = 100f;
     void Spawn()
@@ -38,16 +39,25 @@ public class MonsterCtrl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     void DropItem(Transform itemtrans)
     {
+        score += 100;
+        Debug.Log(score);
         int randomItem = Random.RandomRange(-2, 2);
         if(randomItem > 0)
         {
             Instantiate(itemObject, itemtrans.position, Quaternion.identity);
             Debug.Log("Item Drop");
         }
+    }
+    void OnGUI()
+    {
+        var labelstyle = new GUIStyle();
+        labelstyle.fontSize = 50;
+        labelstyle.normal.textColor = Color.white;
+        GUILayout.Label("Á¡¼ö : " + score, labelstyle);
     }
 }
