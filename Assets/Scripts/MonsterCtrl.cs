@@ -9,9 +9,9 @@ public class MonsterCtrl : MonoBehaviour
 
     public static List<GameObject> monsters = new List<GameObject>();
 
-    public int spawnMaxCount = 50;
+    public int spawnMaxCount = 1;
     public static int score = 0;
-
+    public static int playerHp = 200;
     private float rndPos = 100f;
     void Spawn()
     {
@@ -45,19 +45,24 @@ public class MonsterCtrl : MonoBehaviour
     void DropItem(Transform itemtrans)
     {
         score += 100;
-        Debug.Log(score);
         int randomItem = Random.RandomRange(-2, 2);
         if(randomItem > 0)
         {
             Instantiate(itemObject, itemtrans.position, Quaternion.identity);
-            Debug.Log("Item Drop");
         }
+    }
+    void PlayerGetDamage(int damage)
+    {
+        playerHp -= damage;
     }
     void OnGUI()
     {
         var labelstyle = new GUIStyle();
-        labelstyle.fontSize = 50;
+        labelstyle.fontSize = 40;
         labelstyle.normal.textColor = Color.white;
         GUILayout.Label("점수 : " + score, labelstyle);
+        GUILayout.Label("현재 몬스터 수 : " + monsters.Count, labelstyle);
+        GUILayout.Label("현재 플레이어 체력 : " + playerHp, labelstyle);
     }
+
 }

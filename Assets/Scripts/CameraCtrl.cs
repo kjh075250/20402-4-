@@ -11,14 +11,32 @@ public class CameraCtrl : MonoBehaviour
     public Transform cameraTransform = null;
     public Transform targetTransform = null;
 
+    public static List<GameObject> EffectsList = new List<GameObject>();
+    public GameObject effect1 = null;
+    public GameObject effect2 = null;
+    public GameObject effect3 = null;
+    public GameObject ShopUI = null;
+
+    private bool IsShopOpen = false;
     // Update is called once per frame
+    private void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        EffectsList.Add(effect1);
+        EffectsList.Add(effect2);
+        EffectsList.Add(effect3);
+        ShopUI.SetActive(false);
+    }
+    private void Update()
+    {
+        TurnOnShopUI();
+    }
     void LateUpdate()
     {
-        CameraMove();   
+        CameraMove();
     }
     void CameraMove()
     {
-        Cursor.lockState = CursorLockMode.Locked;
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
 
@@ -28,7 +46,33 @@ public class CameraCtrl : MonoBehaviour
         rotationY = rotationY + mouseY * detailY;
         rotationY = (rotationY > 180.0f) ? rotationY - 360.0f : rotationY;
 
-        cameraTransform.localEulerAngles = new Vector3(Mathf.Clamp(-rotationY, -5, 25),rotationX, 0f);
+        cameraTransform.localEulerAngles = new Vector3(Mathf.Clamp(-rotationY, -20, 50),rotationX, 0f);
         cameraTransform.position = targetTransform.position;
+    }
+    void TurnOnShopUI()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            if (IsShopOpen == false)
+            {
+                Time.timeScale = 0;
+                ShopUI.SetActive(true);
+                Cursor.lockState = CursorLockMode.None;
+                detailX = 0f;
+                detailY = 0f;
+                IsShopOpen = true;
+            }
+            else
+            {
+                Time.timeScale = 1;
+                ShopUI.SetActive(false);
+                Cursor.lockState = CursorLockMode.Locked;
+                detailX = 5f;
+                detailY = 5f;
+                IsShopOpen = false;
+            }
+        }
+
+
     }
 }

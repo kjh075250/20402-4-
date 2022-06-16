@@ -1,17 +1,18 @@
 using UnityEngine;
 public class EnemyMove : MonsterCtrl
 { 
-    public enum EnemyState {None, GoTarget, Attack,Damage, Die}
+    public enum EnemyState {None, GoTarget, Attack, Die}
     EnemyState enemyState = EnemyState.None;
-    public float moveSpd = 100f;
+    private float moveSpd = 0f;
+    public float defaultMoveSpd = 100f;
+    public float dmgMoveSpd = 85f;
     public GameObject target = null;
     public Transform targetTransform = null;
     public Vector3 posTarget = Vector3.zero;
 
-    public Rigidbody enemyRigidbody = null;
-    public Animator animator = null;
+    private Rigidbody enemyRigidbody = null;
+    private Animator animator = null;
     public Transform enemyTransform = null;
-    private Renderer renDerer = null;
     [Header("전투 속성")]
     public int hp = 100;
     public float AtkRange = 15f;
@@ -23,7 +24,8 @@ public class EnemyMove : MonsterCtrl
     void Start()
     {
         enemyState = EnemyState.GoTarget;
-        renDerer = GetComponent<Renderer>();
+        enemyRigidbody = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -32,24 +34,27 @@ public class EnemyMove : MonsterCtrl
         CheckState();
         AnimationCtrl();
         ChkDamageTime();
+        //SetGravity();
     }
     void ChkDamageTime()
     {
         damageTime -= Time.deltaTime;
         if (damageTime > 0)
         {
-            moveSpd = 100f;
-            renDerer.material.color = Color.blue;
+            moveSpd = dmgMoveSpd;
         }
         else
         {
-            renDerer.material.color = Color.black;
-            moveSpd = 150f;
+            moveSpd = defaultMoveSpd;
         }
     }
 
     void SetMove()
     {
+        if(Time.timeScale == 0)
+        {
+            return;
+        }
         Vector3 distance = Vector3.zero;
         Vector3 posLookAt = Vector3.zero;
 
@@ -65,22 +70,24 @@ public class EnemyMove : MonsterCtrl
         }
         Vector3 direction = distance.normalized;
 
-        direction = new Vector3(direction.x, 0f, direction.z);
+        direction = new Vector3(direction.x, 0, direction.z);
+        Vector3 amount = Vector3.zero;
+        //Vector3 vecGra = new Vector3(0f,velgravity,0f);
+        amount = (direction * moveSpd);
 
-        Vector3 amount = direction * moveSpd;
-        
         enemyRigidbody.AddForce(amount);
         enemyTransform.LookAt(posLookAt);
-
     }
     void SetAtk()
     {
-        float distance = Vector3.Distance(targetTransform.position, enemyTransform.position); 
+        float distance = Vector3.Distance(targetTransform.position, enemyTransform.position);
 
         if (distance > AtkRange + 1f)
         {
             enemyState = EnemyState.GoTarget;
         }
+
+
     }
     void AnimationCtrl()
     {
@@ -107,14 +114,13 @@ public class EnemyMove : MonsterCtrl
             case EnemyState.Attack:
                 SetAtk();
                 break;
-            case EnemyState.Damage:
-                break;
             case EnemyState.Die:
                 SetDie();
                 break;
             default:
                 break;
         }
+
     }
     void SetDie()
     {
@@ -128,7 +134,10 @@ public class EnemyMove : MonsterCtrl
         SendMessage("DropItem",myTransform);
         Destroy(gameObject);
     }
-
+    void DashEvent()
+    {
+        SendMessage("PlayerGetDamage",10);
+    }
     void ApplyDamage(int damage)
     {
         hp -= damage;
@@ -136,7 +145,7 @@ public class EnemyMove : MonsterCtrl
         {
             damageTime = 0.1f;
         }
-        if (hp < 0)
+        if (hp <= 0)
         {
             if(enemyState != EnemyState.Die)
             {
@@ -147,6 +156,29 @@ public class EnemyMove : MonsterCtrl
             }
         }
     }
+    void Explode()
+    {
+        ApplyDamage(200);
+    }
+
+    //void SetGravity()
+    //{
+    //    Ray ray = new Ray(transform.position, Vector3.down);
+    //    RaycastHit raycastHit;
+    //    Vector3 hitVec = Vector3.zero;
+    //    if (Physics.Raycast(ray, out raycastHit, Mathf.Infinity) == true)
+    //    {
+    //        hitVec.y = raycastHit.point.y;
+    //    }
+    //    if (transform.position.y <= hitVec.y)
+    //    {
+    //        velgravity = 0;
+    //    }
+    //    else
+    //    {
+    //        velgravity -= Time.deltaTime * 20f;
+    //    }
+    //}
 
 
 }
