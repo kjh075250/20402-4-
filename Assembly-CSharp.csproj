@@ -58,12 +58,11 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\ItemMove.cs" />
     <Compile Include="Assets\Scripts\ShootEffectCtrl.cs" />
-    <Compile Include="Assets\Scripts\MonsterCtrl.cs" />
+    <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\PlayerCtrl.cs" />
     <Compile Include="Assets\Scripts\EnemyMove.cs" />
     <Compile Include="Assets\Scripts\GrenadeCtrl.cs" />
     <Compile Include="Assets\Scripts\CameraCtrl.cs" />
-    <Compile Include="Assets\Scripts\UIManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Samples\Terrain Tools\0.1.0-preview\Terrain Assets\ThirdPartyNotices.txt" />

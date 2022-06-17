@@ -1,5 +1,5 @@
 using UnityEngine;
-public class EnemyMove : MonsterCtrl
+public class EnemyMove : MonoBehaviour
 { 
     public enum EnemyState {None, GoTarget, Attack, Die}
     EnemyState enemyState = EnemyState.None;
@@ -9,6 +9,7 @@ public class EnemyMove : MonsterCtrl
     public GameObject target = null;
     public Transform targetTransform = null;
     public Vector3 posTarget = Vector3.zero;
+    private float velgravity = 0f;
 
     private Rigidbody enemyRigidbody = null;
     private Animator animator = null;
@@ -34,7 +35,7 @@ public class EnemyMove : MonsterCtrl
         CheckState();
         AnimationCtrl();
         ChkDamageTime();
-        //SetGravity();
+        SetGravity();
     }
     void ChkDamageTime()
     {
@@ -72,7 +73,7 @@ public class EnemyMove : MonsterCtrl
 
         direction = new Vector3(direction.x, 0, direction.z);
         Vector3 amount = Vector3.zero;
-        //Vector3 vecGra = new Vector3(0f,velgravity,0f);
+        Vector3 vecGra = new Vector3(0f,velgravity,0f);
         amount = (direction * moveSpd);
 
         enemyRigidbody.AddForce(amount);
@@ -114,29 +115,24 @@ public class EnemyMove : MonsterCtrl
             case EnemyState.Attack:
                 SetAtk();
                 break;
-            case EnemyState.Die:
-                SetDie();
-                break;
+
             default:
                 break;
         }
 
     }
-    void SetDie()
-    {
-        animator.StopPlayback();
-    }
+
     void DieEvent()
     {
-        monsters.Remove(gameObject);
+        GameManager.Instance.monsters.Remove(gameObject);
         Transform myTransform = this.transform;
         myTransform.position = new Vector3(myTransform.position.x,1f,myTransform.position.z);
-        SendMessage("DropItem",myTransform);
+        GameManager.Instance.DropItem(myTransform);
         Destroy(gameObject);
     }
-    void DashEvent()
+    void DamageEvent()
     {
-        SendMessage("PlayerGetDamage",10);
+        GameManager.Instance.SetHp();
     }
     void ApplyDamage(int damage)
     {
@@ -150,8 +146,8 @@ public class EnemyMove : MonsterCtrl
             if(enemyState != EnemyState.Die)
             {
                 enemyState = EnemyState.Die;
-                GameObject effect = Instantiate(dieEffect, enemyTransform.position, Quaternion.identity);
                 animator.SetTrigger("Die");
+                GameObject effect = Instantiate(dieEffect, enemyTransform.position, Quaternion.identity);
                 Destroy(effect, 1f);
             }
         }
@@ -161,24 +157,24 @@ public class EnemyMove : MonsterCtrl
         ApplyDamage(200);
     }
 
-    //void SetGravity()
-    //{
-    //    Ray ray = new Ray(transform.position, Vector3.down);
-    //    RaycastHit raycastHit;
-    //    Vector3 hitVec = Vector3.zero;
-    //    if (Physics.Raycast(ray, out raycastHit, Mathf.Infinity) == true)
-    //    {
-    //        hitVec.y = raycastHit.point.y;
-    //    }
-    //    if (transform.position.y <= hitVec.y)
-    //    {
-    //        velgravity = 0;
-    //    }
-    //    else
-    //    {
-    //        velgravity -= Time.deltaTime * 20f;
-    //    }
-    //}
+    void SetGravity()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit raycastHit;
+        Vector3 hitVec = Vector3.zero;
+        if (Physics.Raycast(ray, out raycastHit, Mathf.Infinity) == true)
+        {
+            hitVec.y = raycastHit.point.y;
+        }
+        if (transform.position.y <= hitVec.y)
+        {
+            velgravity = 0;
+        }
+        else
+        {
+            velgravity -= Time.deltaTime * 20f;
+        }
+    }
 
 
 }

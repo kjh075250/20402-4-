@@ -17,10 +17,13 @@ public class ShootEffectCtrl : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        CheckClick();
-        CheckAttack(); 
-        shootEffect.transform.position = gunPos.position;
-        shootEffect.transform.rotation = gunPos.rotation;
+        if(GameManager.Instance.playerHp > 0)
+        {
+            CheckClick();
+            CheckAttack();
+            shootEffect.transform.position = gunPos.position;
+            shootEffect.transform.rotation = gunPos.rotation;
+        }
     }
     void CheckClick()
     {

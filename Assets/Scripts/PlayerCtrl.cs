@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class PlayerCtrl : MonoBehaviour
 {
@@ -18,9 +19,9 @@ public class PlayerCtrl : MonoBehaviour
 
     private int money = 0;
 
-    //public enum PlayerState { None, Idle, Walk, Run}
+    public enum PlayerState { None, Idle, Walk, Run}
 
-    //public PlayerState playerState = PlayerState.None;
+    public PlayerState playerState = PlayerState.None;
 
     private GameObject clone = null;
 
@@ -30,7 +31,6 @@ public class PlayerCtrl : MonoBehaviour
     public Transform camTransform = null;
     public Transform headTransform = null;
 
-    public GameObject shootEffect = null;
     public GameObject damageEffect = null;
     public GameObject shootLight = null;
     public GameObject grenadeObject = null;
@@ -62,6 +62,7 @@ public class PlayerCtrl : MonoBehaviour
         }
 
     }
+
     void Move()
     {
         Transform cameraTrans = Camera.main.transform;
@@ -90,6 +91,7 @@ public class PlayerCtrl : MonoBehaviour
     }
     void AimRayCast()
     {
+        if (GameManager.Instance.playerHp <= 0) return;
         Vector3 posStart = aimTransform.position;
         Vector3 posTarget = aimTransform.forward;
         Ray ray = new Ray(posStart,posTarget);

@@ -29,12 +29,9 @@ public class CameraCtrl : MonoBehaviour
     }
     private void Update()
     {
-        TurnOnShopUI();
-    }
-    void LateUpdate()
-    {
         CameraMove();
     }
+
     void CameraMove()
     {
         float mouseX = Input.GetAxis("Mouse X");
@@ -48,6 +45,16 @@ public class CameraCtrl : MonoBehaviour
 
         cameraTransform.localEulerAngles = new Vector3(Mathf.Clamp(-rotationY, -20, 50),rotationX, 0f);
         cameraTransform.position = targetTransform.position;
+        if(GameManager.Instance.playerHp <= 0)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            detailX = 0f;
+            detailY = 0f;
+        }
+        else
+        {
+            TurnOnShopUI();
+        }
     }
     void TurnOnShopUI()
     {
