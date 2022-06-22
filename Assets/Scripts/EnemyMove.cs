@@ -1,12 +1,15 @@
 using UnityEngine;
 public class EnemyMove : MonoBehaviour
 { 
+
     public enum EnemyState {None, GoTarget, Attack, Die}
     EnemyState enemyState = EnemyState.None;
     private float moveSpd = 0f;
     public float defaultMoveSpd = 100f;
     public float dmgMoveSpd = 85f;
+    public float fogMoveSpd = 93f;
     public GameObject target = null;
+    public GameObject Sectarget = null;
     public Transform targetTransform = null;
     public Vector3 posTarget = Vector3.zero;
     private float velgravity = 0f;
@@ -34,8 +37,17 @@ public class EnemyMove : MonoBehaviour
     {
         CheckState();
         AnimationCtrl();
-        ChkDamageTime();
+        
         SetGravity();
+        if(GameManager.Instance.probeEndTime <= 0)
+        {
+            target = Sectarget;
+            moveSpd = fogMoveSpd;
+        }
+        else
+        {
+            ChkDamageTime();
+        }
     }
     void ChkDamageTime()
     {
@@ -132,7 +144,7 @@ public class EnemyMove : MonoBehaviour
     }
     void DamageEvent()
     {
-        GameManager.Instance.SetHp();
+        GameManager.Instance.SetHp(10);
     }
     void ApplyDamage(int damage)
     {

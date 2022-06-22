@@ -17,7 +17,6 @@ public class PlayerCtrl : MonoBehaviour
     public float power = 500f;
     public float flyingDistance = 10f;
 
-    private int money = 0;
 
     public enum PlayerState { None, Idle, Walk, Run}
 
@@ -144,7 +143,7 @@ public class PlayerCtrl : MonoBehaviour
                     Rigidbody rigidbody = collider.GetComponent<Rigidbody>();
                     if (rigidbody != null)
                     {
-                        if(collider.CompareTag("Monster") == true)
+                        if (collider.CompareTag("Monster") == true)
                         {
                             collider.SendMessage("Explode");
                         }
@@ -161,15 +160,16 @@ public class PlayerCtrl : MonoBehaviour
     {
         if(other.tag == "Money")
         {
-            money += 10;
+            GameManager.Instance.money += 10;
             Destroy(other.gameObject);
         }
     }
     public void OnClickItem1()
     {
-        if(money > 20)
+        if(GameManager.Instance.money >= 20)
         {
             grenadeEffect = CameraCtrl.EffectsList[0];
+            GameManager.Instance.money -= 20;
             Debug.Log(grenadeEffect);
         }
         else
@@ -179,9 +179,10 @@ public class PlayerCtrl : MonoBehaviour
     }
     public void OnClickItem2()
     {
-        if (money > 40)
+        if (GameManager.Instance.money >= 40)
         {
             grenadeEffect = CameraCtrl.EffectsList[1];
+            GameManager.Instance.money -= 40;
             Debug.Log(grenadeEffect);
         }
         else
@@ -191,9 +192,10 @@ public class PlayerCtrl : MonoBehaviour
     }
     public void OnClickItem3()
     {
-        if (money > 60)
+        if (GameManager.Instance.money >= 60)
         {
             grenadeEffect = CameraCtrl.EffectsList[2];
+            GameManager.Instance.money -= 60;
             Debug.Log(grenadeEffect);
         }
         else

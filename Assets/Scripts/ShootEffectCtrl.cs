@@ -8,13 +8,7 @@ public class ShootEffectCtrl : MonoBehaviour
     public AttackState attackState = AttackState.None;
     public Transform gunPos = null;
     public GameObject shootEffect = null;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
     void LateUpdate()
     {
         if(GameManager.Instance.playerHp > 0)

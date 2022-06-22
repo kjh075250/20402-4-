@@ -25,6 +25,13 @@ public class GameManager : MonoBehaviour
     public int score = 0;
     public int playerHp = 200;
     private float rndPos = 100f;
+    public int money = 0;
+    private float spawnrate = 2f;
+    public bool a = false;
+
+    public float probeEndTime = 180f;
+    public Text timeText = null;
+    public Text HPText = null;
     void Spawn()
     {
         if(monsters.Count > spawnMaxCount)
@@ -47,26 +54,29 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1;
         Instance = this;
-        InvokeRepeating("Spawn", 3f, 1f);
+        InvokeRepeating("Spawn", 3f, spawnrate);
         GameOverCanvas.SetActive(false);
-            RenderSettings.fog = false;
-
+        HPText.text = "조사기기 체력";
+        RenderSettings.fogDensity = 0;
+        RenderSettings.fog = false;
     }
-
     // Update is called once per frame
     void Update()
     {
         CheckDie();
+        CheckScore();
+        InGameUI();
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            probeEndTime = 10f;
+        }
     }
-    public void SetHp()
+    public void SetHp(int i)
     {
-        playerHp -= 10;
+        playerHp -= i;
         HpGageImage.rectTransform.localScale = new Vector3(playerHp / 200f, 1f, 1f);
         UICtrlObject.transform.DOShakePosition(0.5f, 4f, 15, 90f,false,true);
-        //if(score > 100)
-        //{
-        //    RenderSettings.fog = true;
-        //}
+
     }
     public void DropItem(Transform itemtrans)
     {
@@ -78,14 +88,35 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void OnGUI()
+    public void OnGUI()
     {
         var labelstyle = new GUIStyle();
-        labelstyle.fontSize = 40;
+        labelstyle.fontSize = 35;
         labelstyle.normal.textColor = Color.white;
         GUILayout.Label("점수 : " + score, labelstyle);
         GUILayout.Label("현재 몬스터 수 : " + monsters.Count, labelstyle);
         GUILayout.Label("현재 플레이어 체력 : " + playerHp, labelstyle);
+        GUILayout.Label("현재 돈 : " + money, labelstyle);
+    }
+    public void InGameUI()
+    {
+        if (probeEndTime >= 0)
+        {
+            probeEndTime -= Time.deltaTime;
+            timeText.text = "조사 완료까지 남은 시간\n" + probeEndTime.ToString("0");
+        }
+        if (probeEndTime <= 0)
+        {
+            RenderSettings.fog = true;
+            HPText.text = "플레이어 체력";
+            timeText.text = "탈출 지점까지 이동하세요";
+
+            if (RenderSettings.fogDensity <= 0.06f)
+            {
+                Debug.Log(RenderSettings.fogDensity);
+                RenderSettings.fogDensity += 0.07f * Time.deltaTime;
+            }
+        }
     }
     void CheckDie()
     {
@@ -107,11 +138,17 @@ public class GameManager : MonoBehaviour
             UICanvas.SetActive(false);
             GameOverCanvas.SetActive(true);
             Camera.main.fieldOfView = 30f;
-            Debug.Log(endTime);
         }
     }
     public void OnClickRestart()
     {
         SceneManager.LoadScene("SampleScene");
+    }
+    private void CheckScore()
+    {
+        if(score >= 1000)
+        {
+            spawnrate = 1f; 
+        }
     }
 }

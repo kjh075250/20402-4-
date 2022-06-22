@@ -16,12 +16,22 @@ public class CameraCtrl : MonoBehaviour
     public GameObject effect2 = null;
     public GameObject effect3 = null;
     public GameObject ShopUI = null;
+    public GameObject ExplainUI = null;
 
     private bool IsShopOpen = false;
+    private bool IsExplainOpen = false;
+    public bool IsFirstPlay = Tuto._isTuto;
     // Update is called once per frame
     private void Start()
     {
+        IsFirstPlay = Tuto._isTuto;
         Cursor.lockState = CursorLockMode.Locked;
+        if (IsFirstPlay == false)
+        {
+            ExplainUI.SetActive(true);
+            Tuto._isTuto = true;
+            Debug.Log("½Ã´í");
+        }
         EffectsList.Add(effect1);
         EffectsList.Add(effect2);
         EffectsList.Add(effect3);
@@ -30,6 +40,7 @@ public class CameraCtrl : MonoBehaviour
     private void Update()
     {
         CameraMove();
+        OnOffExplainUI();
     }
 
     void CameraMove()
@@ -56,11 +67,40 @@ public class CameraCtrl : MonoBehaviour
             TurnOnShopUI();
         }
     }
+    void OnOffExplainUI()
+    {
+        if (IsExplainOpen == true)
+        {
+            Time.timeScale = 0;
+            GameManager.Instance.a = true;
+        }
+        else
+        {
+            GameManager.Instance.a = false;
+        }
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            if (IsExplainOpen == true)
+            {
+                Time.timeScale = 1;
+                IsExplainOpen = false;
+                ExplainUI.SetActive(false);
+
+            }
+            else if (IsShopOpen != true)
+            {
+                Time.timeScale = 0;
+                IsExplainOpen = true;
+                ExplainUI.SetActive(true);
+            }
+        }
+
+    }
     void TurnOnShopUI()
     {
         if (Input.GetKeyDown(KeyCode.P))
         {
-            if (IsShopOpen == false)
+            if (IsShopOpen == false && IsExplainOpen == false)
             {
                 Time.timeScale = 0;
                 ShopUI.SetActive(true);
@@ -69,7 +109,7 @@ public class CameraCtrl : MonoBehaviour
                 detailY = 0f;
                 IsShopOpen = true;
             }
-            else
+            else if(IsExplainOpen != true)
             {
                 Time.timeScale = 1;
                 ShopUI.SetActive(false);
