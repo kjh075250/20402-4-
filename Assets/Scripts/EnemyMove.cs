@@ -37,11 +37,11 @@ public class EnemyMove : MonoBehaviour
     {
         CheckState();
         AnimationCtrl();
-        
         SetGravity();
         if(GameManager.Instance.probeEndTime <= 0)
         {
             target = Sectarget;
+            targetTransform = Sectarget.transform;
             moveSpd = fogMoveSpd;
         }
         else
@@ -82,25 +82,20 @@ public class EnemyMove : MonoBehaviour
             posLookAt = new Vector3(target.transform.position.x, enemyTransform.position.y, target.transform.position.z);
         }
         Vector3 direction = distance.normalized;
-
         direction = new Vector3(direction.x, 0, direction.z);
         Vector3 amount = Vector3.zero;
         Vector3 vecGra = new Vector3(0f,velgravity,0f);
         amount = (direction * moveSpd);
-
         enemyRigidbody.AddForce(amount);
         enemyTransform.LookAt(posLookAt);
     }
     void SetAtk()
     {
         float distance = Vector3.Distance(targetTransform.position, enemyTransform.position);
-
         if (distance > AtkRange + 1f)
         {
             enemyState = EnemyState.GoTarget;
         }
-
-
     }
     void AnimationCtrl()
     {
@@ -127,11 +122,9 @@ public class EnemyMove : MonoBehaviour
             case EnemyState.Attack:
                 SetAtk();
                 break;
-
             default:
                 break;
         }
-
     }
 
     void DieEvent()
@@ -187,6 +180,4 @@ public class EnemyMove : MonoBehaviour
             velgravity -= Time.deltaTime * 20f;
         }
     }
-
-
 }

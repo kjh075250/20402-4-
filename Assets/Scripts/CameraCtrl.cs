@@ -31,6 +31,11 @@ public class CameraCtrl : MonoBehaviour
             ExplainUI.SetActive(true);
             Tuto._isTuto = true;
             Debug.Log("½Ã´í");
+            Time.timeScale = 0;
+        }
+        else
+        {
+            Time.timeScale = 1;
         }
         EffectsList.Add(effect1);
         EffectsList.Add(effect2);
@@ -54,7 +59,7 @@ public class CameraCtrl : MonoBehaviour
         rotationY = rotationY + mouseY * detailY;
         rotationY = (rotationY > 180.0f) ? rotationY - 360.0f : rotationY;
 
-        cameraTransform.localEulerAngles = new Vector3(Mathf.Clamp(-rotationY, -20, 50),rotationX, 0f);
+        cameraTransform.localEulerAngles = new Vector3(Mathf.Clamp(-rotationY, -10, 50),rotationX, 0f);
         cameraTransform.position = targetTransform.position;
         if(GameManager.Instance.playerHp <= 0)
         {
@@ -119,7 +124,6 @@ public class CameraCtrl : MonoBehaviour
                 IsShopOpen = false;
             }
         }
-
 
     }
 }
