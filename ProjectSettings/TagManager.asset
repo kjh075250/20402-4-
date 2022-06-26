@@ -7,6 +7,7 @@ TagManager:
   - Money
   - Monster
   - Escape
+  - Tank
   layers:
   - Default
   - TransparentFX

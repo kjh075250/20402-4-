@@ -10,6 +10,7 @@ public class EnemyMove : MonoBehaviour
     public float fogMoveSpd = 93f;
     public GameObject target = null;
     public GameObject Sectarget = null;
+    public GameObject defaultTarget = null;
     public Transform targetTransform = null;
     public Vector3 posTarget = Vector3.zero;
     private float velgravity = 0f;
@@ -38,14 +39,26 @@ public class EnemyMove : MonoBehaviour
         CheckState();
         AnimationCtrl();
         SetGravity();
-        if(GameManager.Instance.probeEndTime <= 0)
+        CheckTarget();
+    }
+    void CheckTarget()
+    {
+        if (GameManager.Instance.probeEndTime <= 0 && GameManager.Instance.IsBarriActivate == false)
         {
             target = Sectarget;
             targetTransform = Sectarget.transform;
             moveSpd = fogMoveSpd;
         }
+        else if(GameManager.Instance.IsBarriActivate)
+        {
+            target = GameManager.Instance.barri;
+            targetTransform = GameManager.Instance.barri.transform;
+            moveSpd = defaultMoveSpd;
+        }
         else
         {
+            target = defaultTarget;
+            targetTransform = defaultTarget.transform;
             ChkDamageTime();
         }
     }
@@ -84,7 +97,6 @@ public class EnemyMove : MonoBehaviour
         Vector3 direction = distance.normalized;
         direction = new Vector3(direction.x, 0, direction.z);
         Vector3 amount = Vector3.zero;
-        Vector3 vecGra = new Vector3(0f,velgravity,0f);
         amount = (direction * moveSpd);
         enemyRigidbody.AddForce(amount);
         enemyTransform.LookAt(posLookAt);
@@ -151,6 +163,7 @@ public class EnemyMove : MonoBehaviour
             if(enemyState != EnemyState.Die)
             {
                 enemyState = EnemyState.Die;
+                this.GetComponent<Collider>().enabled = false;
                 animator.SetTrigger("Die");
                 GameObject effect = Instantiate(dieEffect, enemyTransform.position, Quaternion.identity);
                 Destroy(effect, 1f);
@@ -178,6 +191,16 @@ public class EnemyMove : MonoBehaviour
         else
         {
             velgravity -= Time.deltaTime * 20f;
+        }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Tank"))
+        {
+            ApplyDamage(1000);
+            GameManager.Instance.ShakeCamera();
+            GameManager.Instance.Campos.transform.position = this.transform.position + Vector3.up * 3f + Vector3.forward * 3f;
+            GameManager.Instance.SetScore(200, "점수 +200(로드킬)");
         }
     }
 }

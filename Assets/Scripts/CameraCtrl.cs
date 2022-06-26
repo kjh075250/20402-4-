@@ -28,9 +28,9 @@ public class CameraCtrl : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         if (IsFirstPlay == false)
         {
+            IsExplainOpen = true;
             ExplainUI.SetActive(true);
             Tuto._isTuto = true;
-            Debug.Log("½Ã´í");
             Time.timeScale = 0;
         }
         else
@@ -46,6 +46,8 @@ public class CameraCtrl : MonoBehaviour
     {
         CameraMove();
         OnOffExplainUI();
+
+
     }
 
     void CameraMove()
@@ -61,7 +63,7 @@ public class CameraCtrl : MonoBehaviour
 
         cameraTransform.localEulerAngles = new Vector3(Mathf.Clamp(-rotationY, -10, 50),rotationX, 0f);
         cameraTransform.position = targetTransform.position;
-        if(GameManager.Instance.playerHp <= 0)
+        if(GameManager.Instance.playerHp <= 0 || GameManager.Instance.EscapeCanvas.activeInHierarchy)
         {
             Cursor.lockState = CursorLockMode.None;
             detailX = 0f;
@@ -78,6 +80,7 @@ public class CameraCtrl : MonoBehaviour
         {
             Time.timeScale = 0;
             GameManager.Instance.a = true;
+            GameManager.Instance.IsUIActivate = true;
         }
         else
         {
@@ -90,13 +93,15 @@ public class CameraCtrl : MonoBehaviour
                 Time.timeScale = 1;
                 IsExplainOpen = false;
                 ExplainUI.SetActive(false);
-
+                GameManager.Instance.IsUIActivate = false;
             }
             else if (IsShopOpen != true)
             {
                 Time.timeScale = 0;
                 IsExplainOpen = true;
                 ExplainUI.SetActive(true);
+                GameManager.Instance.IsUIActivate = true;
+
             }
         }
 
@@ -109,6 +114,7 @@ public class CameraCtrl : MonoBehaviour
             {
                 Time.timeScale = 0;
                 ShopUI.SetActive(true);
+                GameManager.Instance.IsUIActivate = true;
                 Cursor.lockState = CursorLockMode.None;
                 detailX = 0f;
                 detailY = 0f;
@@ -122,6 +128,7 @@ public class CameraCtrl : MonoBehaviour
                 detailX = 5f;
                 detailY = 5f;
                 IsShopOpen = false;
+                GameManager.Instance.IsUIActivate = false;
             }
         }
 

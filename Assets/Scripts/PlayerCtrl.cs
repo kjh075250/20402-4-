@@ -11,12 +11,14 @@ public class PlayerCtrl : MonoBehaviour
     private Animator animator = null;
     [Header("¼Ó¼º")]
     public float walkSpeed = 3f;
-    public float runSpeed = 10f;
+    public float runSpeed = 24f;
     public float currentFireRate = 0f;
     public float currentGrenadeCoolTime = 0f;
-    public float currentFlyingCoolTime = 0f;
-    public float currentFlyingSkillRate = 0f;
+    public float currentTankCoolTime = 0f;
+    public float currentTankSkillRate = 0f;
     public float currentMoneyCoolTime = 0f;
+    public bool _isMoneyActivate = false;
+    private int barriCount = 1;
     public float maxGrenadeRate = 3f;
     private float radius = 20f;
     public float power = 500f;
@@ -25,7 +27,7 @@ public class PlayerCtrl : MonoBehaviour
     private bool _isQskillActivate = false;
     private float aniMoveSpd = 100f;
 
-    public enum PlayerState { None, Idle, Walk, Run}
+    public enum PlayerState { None, Idle, Walk, Run }
 
     public PlayerState playerState = PlayerState.None;
 
@@ -41,14 +43,23 @@ public class PlayerCtrl : MonoBehaviour
     public GameObject shootLight = null;
     public GameObject grenadeObject = null;
     public GameObject grenadeEffect = null;
-    public GameObject ropeObject = null;
+    public GameObject tank = null;
+    public GameObject Soldier = null;
+    public GameObject buyTrans = null;
+
     public Image cooltimeImage1 = null;
     public Image cooltimeImage2 = null;
     public Image cooltimeImage3 = null;
+    public Image cooltimeImage4 = null;
+    
+    public Text item1Tex = null;
+    public Text item2Tex = null;
+    public Text buyTex = null;
 
     // Start is called before the first frame update
     void Start()
     {
+        tank.SetActive(false);
         cooltimeImage1.fillAmount = 0;
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
@@ -61,11 +72,11 @@ public class PlayerCtrl : MonoBehaviour
         AimRayCast();
         CalFireRate();
         UseSkill();
-        CheckQ();
+        CheckSkill();
     }
     void CalFireRate()
     {
-        if(currentFireRate > 0)
+        if (currentFireRate > 0)
         {
             currentFireRate -= Time.deltaTime;
         }
@@ -74,14 +85,14 @@ public class PlayerCtrl : MonoBehaviour
             currentGrenadeCoolTime -= Time.deltaTime;
             cooltimeImage1.fillAmount = currentGrenadeCoolTime / 3f;
         }
-        if (currentFlyingCoolTime > 0)
+        if (currentTankCoolTime > 0)
         {
-            currentFlyingCoolTime -= Time.deltaTime;
-            cooltimeImage2.fillAmount = currentFlyingCoolTime / 10f;
+            currentTankCoolTime -= Time.deltaTime;
+            cooltimeImage2.fillAmount = currentTankCoolTime / 30f;
         }
-        if (currentFlyingSkillRate > 0)
+        if (currentTankSkillRate > 0)
         {
-            currentFlyingSkillRate -= Time.deltaTime;
+            currentTankSkillRate -= Time.deltaTime;
         }
         if (currentMoneyCoolTime > 0)
         {
@@ -95,7 +106,7 @@ public class PlayerCtrl : MonoBehaviour
         Transform cameraTrans = Camera.main.transform;
         Vector3 forward = cameraTrans.TransformDirection(Vector3.forward);
         forward.y = 0f;
-        Quaternion rot = new Quaternion(transform.rotation.x,cameraTrans.rotation.y,0,cameraTrans.rotation.w);
+        Quaternion rot = new Quaternion(transform.rotation.x, cameraTrans.rotation.y, 0, cameraTrans.rotation.w);
 
         Vector3 right = new Vector3(forward.z, 0f, -forward.x);
 
@@ -103,47 +114,68 @@ public class PlayerCtrl : MonoBehaviour
         float Horizontal = Input.GetAxis("Horizontal");
 
         Vector3 targetDirection = vertical * forward + Horizontal * right;
-
         moveDirection = Vector3.RotateTowards(moveDirection, targetDirection, dirRotateSpeed * Mathf.Deg2Rad * Time.deltaTime, 1000.0f);
 
         moveDirection = moveDirection.normalized;
-
+        Soldier.SetActive(true);
         float speed = walkSpeed;
-        if(_isQskillOn)
+        if (_isQskillOn == true)
         {
             speed = runSpeed;
+            Camera.main.fieldOfView = 65f;
+            Soldier.SetActive(false);
+            tank.SetActive(true);
         }
+        Camera.main.fieldOfView = 60f;
         Vector3 gravityVec = new Vector3(0f, 0f, 0f);
         Vector3 moveAmount = (moveDirection * speed * Time.deltaTime);
-        animator.SetFloat("moveSpeed", moveAmount.magnitude * aniMoveSpd);
+        if (_isQskillOn != true)
+        {
+            animator.SetFloat("moveSpeed", moveAmount.magnitude * aniMoveSpd);
+        }
+        else
+        {
+            animator.SetFloat("moveSpeed", 0f);
+        }
         transform.rotation = rot;
         collisionFlags = characterController.Move(moveAmount);
     }
+
     void AimRayCast()
     {
         if (GameManager.Instance.playerHp <= 0) return;
         Vector3 posStart = aimTransform.position;
         Vector3 posTarget = aimTransform.forward;
-        Ray ray = new Ray(posStart,posTarget);
+        Ray ray = new Ray(posStart, posTarget);
         RaycastHit rayHit;
         Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red);
         if (Input.GetMouseButton(0) && currentFireRate <= 0)
         {
             if (Physics.Raycast(ray, out rayHit, 1000f, LayerMask.GetMask("Monster")))
             {
-                rayHit.transform.SendMessage("ApplyDamage", 20);
+                int damage;
+                if (_isQskillOn)
+                {
+                    damage = 40;
+                    Debug.Log(damage);
+                }
+                else
+                {
+                    damage = 20;
+                }
+                rayHit.transform.SendMessage("ApplyDamage", damage);
                 GameObject clone = Instantiate(damageEffect, rayHit.point, Quaternion.LookRotation(rayHit.normal));
                 Destroy(clone, 0.5f);
             }
             shootLight.SetActive(true);
             currentFireRate = 0.1f;
         }
-        if (Input.GetKeyDown(KeyCode.E) && currentMoneyCoolTime <= 0)
+        if (Input.GetKeyDown(KeyCode.E) && currentMoneyCoolTime <= 0 && _isMoneyActivate == true)
         {
             if (Physics.Raycast(ray, out rayHit, 1000f, LayerMask.GetMask("Item")))
             {
                 GameManager.Instance.money += 10;
-                GameManager.Instance.MoneyTextMove();
+                GameManager.Instance.SetScore(10, "Á¡¼ö +10(µ· È¹µæ) ");
                 Destroy(rayHit.transform.gameObject);
                 currentMoneyCoolTime += 1f;
             }
@@ -186,6 +218,7 @@ public class PlayerCtrl : MonoBehaviour
                         if (collider.CompareTag("Monster") == true)
                         {
                             collider.SendMessage("Explode");
+                            GameManager.Instance.SetScore(50, "Á¡¼ö +50(¼ö·ùÅº »ç¿ë)");
                         }
                     }
                 }
@@ -194,92 +227,117 @@ public class PlayerCtrl : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Q) && currentFlyingCoolTime <= 0 && _isQskillActivate == true 
+        if (Input.GetKeyDown(KeyCode.Q) && currentTankCoolTime <= 0 && _isQskillActivate == true
             && GameManager.Instance.IsEscapeActivate == false)
         {
-            if (_isQskillOn) return;
-            _isQskillOn = true;
-            ropeObject.transform.Translate(new Vector3(0f, -9.8f, 0));
-            currentFlyingSkillRate += 5f;
-            currentFlyingCoolTime += 10f;
+            if (_isQskillOn == false)
+            {
+                _isQskillOn = true;
+                Debug.Log(_isQskillOn);
+            }
+            currentTankSkillRate += 15f;
+            currentTankCoolTime += 30f;
+        }
+        if (Input.GetKeyDown(KeyCode.R) && GameManager.Instance.IsBarriActivate == false && barriCount > 0)
+        {
+            barriCount -= 1;
+            GameManager.Instance.barriHp = 200;
+            GameManager.Instance.BarriGageImage.rectTransform.localScale = new Vector3(200 / 200f, 1f, 1f);
+            GameManager.Instance.barri.SetActive(true);
+            GameManager.Instance.barri.transform.position = transform.position + Vector3.forward * 2f + Vector3.up;
+            GameManager.Instance.IsBarriActivate = true;
+            GameManager.Instance.BarriCtrlObject.SetActive(true);
         }
     }
-    void CheckQ()
+    void CheckSkill()
     {
-        if(GameManager.Instance.IsEscapeActivate == true)
+        if (GameManager.Instance.IsEscapeActivate == true)
         {
             _isQskillActivate = false;
+            _isQskillOn = false;
         }
-        if(_isQskillActivate == false)
+        if (_isQskillActivate == false)
         {
             cooltimeImage2.fillAmount = 1;
         }
-        if (_isQskillOn)
-        {
-            aniMoveSpd = 0f;
-            transform.position = new Vector3(transform.position.x, 1f, transform.position.z);
-        }
-        if (currentFlyingSkillRate <= 0)
+        if (currentTankSkillRate <= 0)
         {
             _isQskillOn = false;
-            aniMoveSpd = 100f;
-            ropeObject.transform.position = new Vector3(ropeObject.transform.position.x, 15f, ropeObject.transform.position.z);
-            transform.position = new Vector3(transform.position.x, 0f, transform.position.z);
         }
-
+        if (_isQskillOn == false)
+        {
+            tank.SetActive(false);
+        }
+        cooltimeImage4.fillAmount = barriCount;   
     }
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Money")
+        if (other.tag == "Money")
         {
             GameManager.Instance.money += 10;
+            GameManager.Instance.SetScore(10, "Á¡¼ö +10(µ· È¹µæ) ");
             Destroy(other.gameObject);
         }
-        if(other.tag == "Escape")
+        if (other.tag == "Escape")
         {
+            GameManager.Instance.SetScore(300, "Á¡¼ö +300(Å»Ãâ)");
+            GameManager.Instance.CheckEscape();
             Debug.Log("Å»Ãâ ¼º°ø");
         }
     }
     public void OnClickItem1()
     {
-        if(GameManager.Instance.money >= 20)
+        if (GameManager.Instance.money >= 40)
         {
-            grenadeEffect = CameraCtrl.EffectsList[0];
-            GameManager.Instance.money -= 20;
-            Debug.Log(grenadeEffect);
+            if (_isMoneyActivate == false)
+            {
+                _isMoneyActivate = true;
+                GameManager.Instance.money -= 40;
+                cooltimeImage3.fillAmount = 0f;
+                item1Tex.text = "±¸¸Å ¿Ï·á";
+                buyTex.text = "±¸¸Å ¼º°ø!";
+            }
         }
         else
         {
-            Debug.Log("No Money!");
+            buyTex.text = "µ· ºÎÁ·";
+
         }
     }
     public void OnClickItem2()
     {
-        if (GameManager.Instance.money >= 40)
+        if (GameManager.Instance.money >= 60)
         {
-            if(_isQskillActivate == false)
+            if (_isQskillActivate == false)
             {
                 _isQskillActivate = true;
                 cooltimeImage2.fillAmount = 0f;
+                Debug.Log(_isQskillActivate);
+                GameManager.Instance.money -= 60;
+                item2Tex.text = "±¸¸Å ¿Ï·á";
+                buyTex.text = "±¸¸Å ¼º°ø!";
+
             }
-            GameManager.Instance.money -= 40;
         }
         else
         {
-            Debug.Log("No Money!");
+            buyTex.text = "µ· ºÎÁ·";
+
         }
     }
     public void OnClickItem3()
     {
-        if (GameManager.Instance.money >= 60)
+        if (GameManager.Instance.money >= 100)
         {
-            grenadeEffect = CameraCtrl.EffectsList[2];
-            GameManager.Instance.money -= 60;
-            Debug.Log(grenadeEffect);
+            barriCount += 1;
+            GameManager.Instance.money -= 100;
+            buyTex.text = "±¸¸Å ¼º°ø!";
+
         }
         else
         {
-            Debug.Log("No Money!");
+            buyTex.text = "µ· ºÎÁ·";
+
         }
     }
 }
